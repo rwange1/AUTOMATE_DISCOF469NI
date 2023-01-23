@@ -1,0 +1,7 @@
+echo "# AUTOMATE_DISCOF469NI" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/rwange1/AUTOMATE_DISCOF469NI.git
+git push -u origin main
