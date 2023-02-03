@@ -17,12 +17,11 @@ LCD_DISCO_F469NI lcd;
 TS_DISCO_F469NI ts;
 TS_StateTypeDef TS_State;
 
+
 int main()
 {
     while (true)
     {
-
         automate();
-        ThisThread::sleep_for(WAIT_TIME_MS);
     }
 }

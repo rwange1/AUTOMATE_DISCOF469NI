@@ -12,6 +12,7 @@
 #include "automate.h"
 #include "fonctions.h"
 #include <cstring>
+#include "bouton.h"
 
 #define CARTE_MOTEUR 0x02
 #define NUCLEO_GAUCHE 0x04

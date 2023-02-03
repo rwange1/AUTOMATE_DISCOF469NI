@@ -1,8 +1,6 @@
 #include "all_includes.h"
-#include "stm32469i_discovery.h"
 
 #define WAIT_TIME_MS 500ms
-#define MAIN_SLEEP_TIME 200 // ms
 
 // Listes des ID (Cette carte aurras l'ID 0x01)
 
@@ -10,6 +8,7 @@
 Auto_etat automate_etat = LAUNCH;
 
 void automate() {
+
 
   /* Initialisations de différents flag
   (voir la listes des ID pour plus d'info) */
@@ -134,5 +133,5 @@ void automate() {
     break;
   }
   ts.GetState(&TS_State);
-  wait_us(2000000);
+  wait_us(1000000);
 }
