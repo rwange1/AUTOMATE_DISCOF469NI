@@ -1,8 +1,6 @@
 #ifndef AUTOMATE_H
 #define AUTOMATE_H
 
-#include "mbed.h"
-
 //Liste des différents états de l'automate
 
 typedef enum{
