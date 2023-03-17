@@ -5,27 +5,33 @@
 #include "LCD_DISCO_F469NI.h"
 #include "TS_DISCO_F469NI.h"
 #include "rtos.h"
+#include "fonts.h"
+#include "Thread.h"
+#include "stm32469i_discovery_lcd.h"
 
-// #include "automate.h"
-// #include "fonctions.h"
+//#include "SDFileSystem.h"
 
-#include "automate.h"
+#include "automate_visu.h"
+#include "auto_match.h"
 #include "fonctions.h"
 #include <cstring>
 #include "bouton.h"
 
-#define CARTE_MOTEUR 0x02
-#define NUCLEO_GAUCHE 0x04
-#define NUCLEO_DROIT 0x08
-#define ANTI_COLLISION 0x10
-#define HERCULEX_1 0x20
-#define HERCULEX_2 0x40
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "ident_crac.h"
+
+#define CAN_MSG_ARRAY_SIZE 50
+#define SIZE_FIFO 50
 
 //Initialisé dans Le Main
 extern LCD_DISCO_F469NI lcd;
 extern TS_DISCO_F469NI ts;
 extern TS_StateTypeDef TS_State;
 
-
+extern CAN busCAN;
+extern CANMessage Rx_Msg;
+extern CANMessage can_msg_array[CAN_MSG_ARRAY_SIZE]; // Tableau pour stocker les messages CAN
 
 #endif
