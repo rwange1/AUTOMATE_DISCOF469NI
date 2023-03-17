@@ -5,13 +5,11 @@
 
 typedef enum{
 LAUNCH,         //Lancement
-CHECK_CARTES,   //Check de la connections des cartes via CAN
-AFFICHER_CARTES,    //Affiches les noms des cartes fonctionnelles
-CHECK_SD,       //Check de la connection via cartes SD
-PRINT_SD, //Affiche le contenu de la carte SD
+CHECK_CARTES,    //Check & Affichage des noms des cartes connectés
+CHECK_SD,       //Check de la connection de la cartes SD
+PRINT_SD,   //Affiche le contenu de la carte SD
 PROG_TEST,      
-PROG_MATCH,
-CHOIX_COULEUR,  //Choix du coté du terrain / COuleur de l'équipe
+CHOIX_COULEUR,  //Choix du coté du terrain / Couleur de l'équipe
 CHOIX_STRAT,    
 ATTENTE_JACK,
 LECTURE_FICHIER,

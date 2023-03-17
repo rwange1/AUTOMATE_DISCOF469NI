@@ -6,6 +6,15 @@ Rémi WAN */
 void lcd_init();
 
 /*====================================================================|
+                                CAN
+|====================================================================*/
+
+void canProcessRx();
+int check_id(int CARD);
+
+void CAN_ISR();
+
+/*====================================================================|
                             MENU A 2 CHOIX
 |====================================================================*/
 
@@ -15,7 +24,6 @@ void lcd_confirmation_menu(char * choix);
  @param choix : str du choix précédement effectué pour l'afficher
 
 **/
-
 bool ts_confirmation_menu();
 /**
 
@@ -29,7 +37,12 @@ bool choix_equipe();
 Menu à 2 boutons du cas CHOIX_COULEUR
 
 **/
+char choix_strategie();
+/**
 
+Menu du choix de la stratégie
+
+**/
 
 /*====================================================================|
                                 BOUTONS
@@ -73,19 +86,31 @@ Hitbox du bouton :
 /* A éviter */
 bool bouton(short marge_X, short marge_Y, short largeur_X, short hauteur_Y,int couleur_interne, int couleur_contour, int couleur_texte);
 
+void continuer(bool affiche_bouton);
+/*
+    pour que touchez l'écran fasse passer a l'étape suivante (attention tout l'écran n'est pas pris en compte)
+*/
+
+/*====================================================================|
+                              AFFICHAGE
+|====================================================================*/
 
 void affichage_sd(bool sd_here);
 /*
     Dois afficher si la carte SD est présente
 */
 
-void affichage_cartes();
+bool affichage_cartes();
 /*
     Dois afficher les cartes connecté à l'IHM
 */
 
+//Déco pendant que le programme tourne
+void decoration();
+void amogus();
 
 //boutons particuliers:
 
-void aff_entête();
+void aff_entete();
+
 #endif
