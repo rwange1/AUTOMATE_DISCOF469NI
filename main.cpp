@@ -56,7 +56,11 @@ void CAN_ISR() {
 int main() {
   busCAN.attach(&CAN_ISR); // IrqType::RxIrq
   while (true) {
+<<<<<<< HEAD
     automate_visuel();
+=======
+    automate();
+>>>>>>> fdbb2650820535e5bd97fc366462ee5c51e373cd
     // if(busCAN.read(rxMsg)){
     //     printf("ID : %d\n", rxMsg.id);
     // }

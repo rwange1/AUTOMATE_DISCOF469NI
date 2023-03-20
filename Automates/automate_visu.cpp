@@ -1,7 +1,6 @@
 #include "all_includes.h"
 
 
-// Listes des ID (Cette carte aurras l'ID 0x01)
 
 // Si l'état initiale est différent de LAUNCH c'est qu'il a été forcé pour debug
 Auto_visuel_etat automate_etat = LAUNCH;
@@ -10,7 +9,7 @@ void automate_visuel() {
 
   /* Initialisations de différents flag
   (voir la listes des ID pour plus d'info) */
-  static bool sd_here,cartes_alive, test, match, check_equipe, check_num, sd, jack = false;
+  static bool sd_here,cartes_alive, test, match, check_equipe, check_num, sd = false;
   char buf[30];
   char num;
   char *equipe, *donnee_fichier;
@@ -111,7 +110,7 @@ void automate_visuel() {
     }
     break;
 
-  case ATTENTE_JACK:
+  case ATTENTE_JACK:   //CETTE FONCTION EST A INTEGRER DANS AUTO_MATCH
     jack = true; // a commenter
     aff_entete();
     lcd.DisplayStringAt(0, LINE(1), (uint8_t *)"PRET AU", CENTER_MODE);

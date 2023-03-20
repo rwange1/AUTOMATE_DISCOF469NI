@@ -500,6 +500,7 @@ void affichage_sd(bool sd_here) {
 void decoration() {
   unsigned int test;
   bool deco = false;
+<<<<<<< HEAD
   if (!deco) {
     amogus();
     //  deco = true;
@@ -508,10 +509,20 @@ void decoration() {
       deco = !deco;
     }
   
+=======
+  while (1) {
+    if (!deco) {
+      amogus();
+      //  deco = true;
+      ThisThread::sleep_for(33ms);
+    }
+  }
+>>>>>>> fdbb2650820535e5bd97fc366462ee5c51e373cd
 }
 
 void amogus() {
   static int i;
+<<<<<<< HEAD
   lcd.SetTextColor(BC_COLOR);
 
   lcd.FillRect((525 + i) % 800, 125, 50, 50);
@@ -525,6 +536,14 @@ void amogus() {
   lcd.FillRect((275 + i) % 800, 300, 250, 75);
   lcd.FillRect((275 + i) % 800, 375, 100, 50);
   lcd.FillRect((425 + i) % 800, 375, 100, 50);
+=======
+  lcd.Clear(BC_COLOR);
+
+  lcd.SetTextColor(0xFFFF0000);
+  lcd.FillRect((275 + i) % 800, 125, 250, 250);
+  lcd.FillRect((275 + i) % 800, 275, 100, 150);
+  lcd.FillRect((425 + i) % 800, 275, 100, 150);
+>>>>>>> fdbb2650820535e5bd97fc366462ee5c51e373cd
   lcd.FillRect((475 + i) % 800, 175, 100, 175);
 
   lcd.SetTextColor(LCD_COLOR_DARKRED);
@@ -546,5 +565,8 @@ void amogus() {
   if (i == 800) {
     i = 0;
   }
+<<<<<<< HEAD
   ThisThread::sleep_for(33ms);
+=======
+>>>>>>> fdbb2650820535e5bd97fc366462ee5c51e373cd
 }
