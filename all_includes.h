@@ -33,9 +33,10 @@
 extern LCD_DISCO_F469NI lcd;
 extern TS_DISCO_F469NI ts;
 extern TS_StateTypeDef TS_State;
+extern FATFileSystem m_fs;
+
 
 extern CAN busCAN;
 extern CANMessage Rx_Msg;
 extern CANMessage can_msg_array[CAN_MSG_ARRAY_SIZE]; // Tableau pour stocker les messages CAN
-
 #endif

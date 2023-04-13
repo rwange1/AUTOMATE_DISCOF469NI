@@ -1,23 +1,29 @@
 #include "all_includes.h"
-
+#include "FATFileSystem.h"
 
 struct dirent* files_name[10];
 char *rest;
 char sd_present=0;
+char buf[30];
+//Défini dans automate_visuel
+char * strat;
 
+//comprendra qui pourra
 
 void lecture_fichier(void){
     short i,j;
 
-    DIR* rep = NULL;
-
-    mkdir("/sd", 0777);
-        strcpy(cheminFileStart,"/sd");
-        rep=opendir("/sd");
-        
+    struct dirent de;
+    Dir* rep = NULL;
+    f_mkdir("/sd");
+    sprintf(buf,"/sd/%s",strat);
+    
+        // strcpy(strat,"/sd");
+        rep->open(&m_fs,"/sd");
+        /*     J'ai pas compris
         for(i=0;i<20;i++)
         {
-            files_name[i]= readdir(rep);  
+            files_name[i]= ;  
                     
             if(files_name[i]->d_name=="")
             {
@@ -40,6 +46,6 @@ void lecture_fichier(void){
                 }
                 
             }
-        }
+        }*/
 }
         

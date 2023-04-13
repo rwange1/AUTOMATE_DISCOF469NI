@@ -1,7 +1,7 @@
 #ifndef CRAC_INSTRUCTION
 #define CRAC_INSTRUCTION
 
-#define caca 40
+#define caca "Macron"
 
 enum E_InstructionType
 {

@@ -1,20 +1,26 @@
 #include "all_includes.h"
-#include "ident_crac.h"
 
 #define BC_COLOR                                                               \
   0xff151515 // correspond a une nuance de gris assez foncé qui va nous servir
              // d'arrièreplan
 
-// CAN FIFO
 
-// A modifier si possible
-signed char FIFO_lecture = 0;
-unsigned char FIFO_ecriture = 0;
+// Lis / incrémente la position du FIFO en fonction de l'index
+int fifo_pos(int mode) {
+  static int fifo_pos = 1;
+  if (mode == 1) {
+    return fifo_pos;
+  } else {
+    fifo_pos++;
+  }
+  return 0;
+}
 
+//Monte le FileSystem
 bool mount_sd() {
   printf("Start\n");
   SDIOBlockDevice *bd = nullptr;
-  FATFileSystem m_fs("sd");
+
   if (bd == nullptr) {
     bd = new SDIOBlockDevice();
   }
@@ -43,13 +49,11 @@ bool mount_sd() {
 
 // Y'en a pas lol
 int timer_read_ms(Timer timer) {
-
-  return chrono::duration_cast<chrono::milliseconds>(
-      timer.elapsed_time().count());
+  return chrono::duration_cast<chrono::milliseconds>(timer.elapsed_time()).count();
 }
 
 int timer_read_s(Timer timer) {
-  return chrono::duration_cast<chrono::seconds>(timer.elapsed_time()).count()();
+  return chrono::duration_cast<chrono::seconds>(timer.elapsed_time()).count();
 }
 
 /*
@@ -291,10 +295,12 @@ bool choix_equipe() {
                       Menu du choix de stratégie
 |====================================================================*/
 
-char choix_strategie() {
+char *choix_strategie() {
+  Dir dir;
   char buf[30];
-  char numero = 1;
-  char flag_strat;
+  char numero = 0;
+  char *file_name[4];
+  char *strategie = "none";
   bool attente_choix = true;
 
   lcd.Clear(BC_COLOR);
@@ -303,40 +309,56 @@ char choix_strategie() {
   lcd.DisplayStringAt(0, LINE(1), (uint8_t *)"Selectionnez une ", CENTER_MODE);
   lcd.DisplayStringAt(0, LINE(2), (uint8_t *)"strategie", CENTER_MODE);
 
-  for (int j = 0; j < 2; j++) {
-    for (int i = 0; i < 2; i++) {
+  int i = 1, j = 1;
+  struct dirent de;
+
+  //Créations des boutons
+  while (dir.read(&de) > 0) {
+    // Si le fichier présent est un fichier
+    if (!(de.d_type == DT_DIR)) {
+      printf("Fic : %s\n", de.d_name);
+      sprintf(buf, "-%s", de.d_name);
+      file_name[numero] = de.d_name;
 
       lcd_bouton(25 + 380 * j, 130 + 140 * i /*marge qui s'ajuste*/, 300, 100,
                  0xff00688C, LCD_COLOR_WHITE, LCD_COLOR_WHITE);
-      sprintf(buf, "- strat %d", numero);
       lcd.DisplayStringAt(
           50 + 380 * j, LINE(7 + 6 * i), (uint8_t *)buf,
           LEFT_MODE); // surement les noms de programme plus tard (quand le
                       // file système fonctionnera)
       numero++;
+
+      // Gestion emplacement de bouton
+      i++;
+      if ((j != 3) & (i == 3)) {
+        i = 1;
+        j++;
+      }
+      if (j == 3) {
+        break;
+      }
     }
   }
-
+  numero = 0;
+  //Récupération des info de sélections des boutons 
   while (attente_choix) {
-    numero = 0;
     ts.GetState(&TS_State);
-    for (int j = 0; j < 2; j++) {
-      for (int i = 0; i < 2; i++) {
+    for (int l = 1; l < j; l++) {
+      for (int k = 1; k < i; k++) {
+        numero++;
         if (TS_State.touchDetected) {
-
-          numero++;
-
           // Création des zones tactiles de choix
           if (bouton_hitbox(25 + 380 * j, 130 + 140 * i, 300, 100)) {
-            flag_strat = numero;
+            strategie = file_name[numero];
             ThisThread::sleep_for(200ms);
             attente_choix = false;
+            return strategie;
           }
         }
       }
     }
   }
-  return flag_strat;
+  return strategie;
 }
 /*
 |===============================================================================================|
@@ -524,21 +546,21 @@ void affichage_sd(bool sd_here) {
   continuer(1);
 }
 
-void listage(FATFileSystem fs) {
+void listage(FATFileSystem *fs){
   // Listage des dossiers et des fichiers dans la racine
   Dir dir;
   char buf[50];
   int error;
   int l = 0;
-  error = dir.open(&fs, "/");
+  error = dir.open(fs, "/");
 
   if (!error) {
 
     lcd.Clear(BC_COLOR);
     aff_entete();
 
-    lcd.DisplayStringAt(0, LINE(1), (uint8_t *)"LISTE DES CARTES", CENTER_MODE);
-    lcd.DisplayStringAt(0, LINE(2), (uint8_t *)"PRESENTES", CENTER_MODE);
+    lcd.DisplayStringAt(0, LINE(1), (uint8_t *)"FICHIERS DE LA", CENTER_MODE);
+    lcd.DisplayStringAt(0, LINE(2), (uint8_t *)"CARTE SD", CENTER_MODE);
 
     lcd_bouton(100, 100, 600, 350, 0xff575757, LCD_COLOR_WHITE,
                LCD_COLOR_WHITE);
@@ -547,14 +569,12 @@ void listage(FATFileSystem fs) {
     while (dir.read(&de) > 0) {
       if (de.d_type == DT_DIR) {
         printf("Dir : %s\n", de.d_name);
-        sprintf(buf,"Dossier: %s",de.d_name);
-        lcd.DisplayStringAt(
-            0, LINE(5 + l), (uint8_t *)buf, CENTER_MODE);
+        sprintf(buf, "Dossier: %s", de.d_name);
+        lcd.DisplayStringAt(0, LINE(5 + l), (uint8_t *)buf, CENTER_MODE);
       } else {
         printf("Fic : %s\n", de.d_name);
-         sprintf(buf,"-%s",de.d_name);
-        lcd.DisplayStringAt(
-        0, LINE(5 + l), (uint8_t *)buf, CENTER_MODE);
+        sprintf(buf, "-%s", de.d_name);
+        lcd.DisplayStringAt(0, LINE(5 + l), (uint8_t *)buf, CENTER_MODE);
       }
     }
     //        dir.close();

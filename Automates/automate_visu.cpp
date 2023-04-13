@@ -11,7 +11,7 @@ void automate_visuel() {
   (voir la listes des ID pour plus d'info) */
   static bool sd_here,cartes_alive, test, match, check_equipe, check_num, sd = false;
   char buf[30];
-  char num;
+  char * strat;
   char *equipe, *donnee_fichier;
 
   // Lancement de l'automate
@@ -54,7 +54,7 @@ void automate_visuel() {
   // AFFICHAGE DE SI LA CARTE SD EST PRESENTE + DES FICHIERS EN INTERNES
   case LECT_SD:
 
-
+    listage(&m_fs);
     // CAS programme test sélectionné
     if (test) {
       automate_etat = PROG_TEST;
@@ -66,8 +66,6 @@ void automate_visuel() {
         automate_etat = CHOIX_COULEUR;
       }
     }
-    automate_etat = CHOIX_COULEUR;
-
     break;
 
   // LANCEMENT DU PROGRAMME TEST
@@ -100,9 +98,9 @@ void automate_visuel() {
 
   // CHOIX SRATEGIE A APPLIQUER
   case CHOIX_STRAT:
-
-    num = choix_strategie();
-    sprintf(buf, "%d", num);
+    //Récupere le nom du fichier stratégie utilisé
+    strat = choix_strategie();
+    sprintf(buf, "-%s", strat);
     lcd_confirmation_menu(buf);
     check_num = ts_confirmation_menu();
     if (check_num) {

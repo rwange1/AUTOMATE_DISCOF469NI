@@ -8,7 +8,7 @@ Rémi WAN */
 
 
 bool mount_sd();
-void listage(FATFileSystem fs);
+void listage(FATFileSystem *fs);
 void lcd_init();
 int timer_read_ms(Timer timer);
 int timer_read_s(Timer timer);
@@ -16,6 +16,7 @@ int timer_read_s(Timer timer);
                                 CAN
 |====================================================================*/
 
+int fifo_pos(int mode);
 void canProcessRx();
 int check_id(int CARD);
 
@@ -44,7 +45,7 @@ bool choix_equipe();
 Menu à 2 boutons du cas CHOIX_COULEUR
 
 **/
-char choix_strategie();
+char * choix_strategie();
 /**
 
 Menu du choix de la stratégie

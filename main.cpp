@@ -29,6 +29,7 @@ CANMessage
     can_msg_array[CAN_MSG_ARRAY_SIZE]; // Tableau pour stocker les messages CAN
 int index = 0; // Index pour stocker les messages dans le tableau
 
+FATFileSystem m_fs("sd");
 /*----------------------
          ISR CAN
  -----------------------*/
@@ -40,6 +41,7 @@ void CAN_ISR() {
     {
       can_msg_array[index] = Rx_Msg; // Stocker le message dans le tableau
       index++;                       // Augmenter l'index
+      fifo_pos(0);
     } else {
       // Si le tableau est plein, effacer le premier message et décaler tous les
       // autres vers la gauche
@@ -60,23 +62,22 @@ void CAN_ISR() {
 int main() {
   busCAN.attach(&CAN_ISR); // IrqType::RxIrq
 
- 
 
   // Ouverture du fichier exemple.txt qui doit être présent sur la
   // carte SD
-  File fichier;
-  if (fichier.open(&m_fs, "exemple.txt")) {
-    printf("Impossible d'ouvrir le fichier !\n");
-    while (1)
-      ;
-  }
-  while (1) {
-    char c;
-    if (fichier.read(&c, 1) != 1)
-      break;
-    printf("%c", c);
-  }
-  fichier.close();
+//   File fichier;
+//   if (fichier.open(&m_fs, "exemple.txt")) {
+//     printf("Impossible d'ouvrir le fichier !\n");
+//     while (1)
+//       ;
+//   }
+//   while (1) {
+//     char c;
+//     if (fichier.read(&c, 1) != 1)
+//       break;
+//     printf("%c", c);
+//   }
+//   fichier.close();
 
   while (true) {
 

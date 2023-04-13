@@ -1,7 +1,6 @@
 #include "all_includes.h"
 
 
-FATFileSystem m_fs("sd");
 
 
 enum E_InstructionType charToInstructionType(char type)
@@ -126,7 +125,8 @@ struct S_Instruction stringToInstruction(char line[]) {
 /*  Il faut utiliser strcpy(cheminFileStart,"/local/strat.txt");                        */
 /*   pour indiquer le fichier à utiliser                                                */
 /****************************************************************************************/
-void loadAllInstruction( signed char Strategie) {
+
+/*void loadAllInstruction( signed char Strategie) {
     
     struct S_Instruction instruction;
     char LineBuffer[SIZE];
@@ -143,7 +143,6 @@ void loadAllInstruction( signed char Strategie) {
         instruction = stringToInstruction(LineBuffer);
         strat_instructions[nb_instructions] = instruction;
         if(strat_instructions[nb_instructions].order == UNKNOWN) {
-            Button STRAT_1 (0, 30, 190, 110, PATH[Strategie]);
             STRAT_1.Draw(0xFFF0F0F0, 0);
             errorInstructionLoop();//L'instruction est pas bonne !!   
         }
@@ -155,6 +154,7 @@ void loadAllInstruction( signed char Strategie) {
     fclose(testFile);
     
 }
+*/
 
 /****************************************************************************************/
 /* FUNCTION NAME: FileExists                                                            */
