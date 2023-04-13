@@ -1,4 +1,3 @@
-#include "auto_match.h"
 #include "all_includes.h"
 
 Timer timer;
@@ -26,22 +25,9 @@ void auto_match() {
   case GAME_START:
     timer.start();
     // recalage?
-    automate_etat = CHECK_CARTES_ALIVE;
+    automate_etat = INSTRUCTION_LOADING;
     break;
 
-  case CHECK_CARTES_ALIVE:
-    timout.reset();
-    automate_etat = CHECK_CARTES_ALIVE_WAIT_ACK;
-    break;
-
-  case CHECK_CARTES_ALIVE_WAIT_ACK:
-    timout.start();
-    if (timout.elapsed_time().count() > 1000) {
-      // ERREUR
-    } else {
-      automate_etat = INSTRUCTION_LOADING;
-    }
-    break;
     case INSTRUCTION_LOADING:
         automate_etat = INSTRUCTION_RUNNING;
     break;

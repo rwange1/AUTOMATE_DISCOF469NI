@@ -1,4 +1,5 @@
 #include "all_includes.h"
+#include "ident_crac.h"
 
 #define BC_COLOR                                                               \
   0xff151515 // correspond a une nuance de gris assez foncé qui va nous servir
@@ -10,6 +11,30 @@
 signed char FIFO_lecture = 0;
 unsigned char FIFO_ecriture = 0;
 
+bool mount_sd() {
+  printf("Start\n");
+  SDIOBlockDevice *bd = nullptr;
+  FATFileSystem m_fs("sd");
+  if (bd == nullptr) {
+    bd = new SDIOBlockDevice();
+  }
+  static int i = 0;
+  printf("Tentative mount %3d\n", i++);
+  int m_error = m_fs.mount(bd);
+  if (m_error) {
+    printf("Erreur\n");
+    m_fs.unmount();
+    delete bd;
+    bd = nullptr;
+    ThisThread::sleep_for(1s);
+    return false;
+  } else {
+    printf("Mount ok\n");
+    ThisThread::sleep_for(500ms);
+    return true;
+  }
+}
+
 /*
 |===============================================================================================|
 | | |                                    INITIALISATION | | |
@@ -17,6 +42,15 @@ unsigned char FIFO_ecriture = 0;
 */
 
 // Y'en a pas lol
+int timer_read_ms(Timer timer) {
+
+  return chrono::duration_cast<chrono::milliseconds>(
+      timer.elapsed_time().count());
+}
+
+int timer_read_s(Timer timer) {
+  return chrono::duration_cast<chrono::seconds>(timer.elapsed_time()).count()();
+}
 
 /*
 |===============================================================================================|
@@ -387,68 +421,66 @@ bool affichage_cartes() {
   for (int i = 0; i < CAN_MSG_ARRAY_SIZE; i++) {
 
     id_card = can_msg_array[i].id;
-    // id_card = check_id(CHECK_MOTEUR);
     printf("ID CARTE: %04x\n", id_card);
 
-    if ((id_card == ALIVE_MOTEUR) & !(check & 0x01)) {
-      lcd.DisplayStringAt(0, LINE(5 + l), (uint8_t *)"carte moteur",
-                          CENTER_MODE);
-      check = check + 0x01;
-      l += 1;
+    switch (id_card) {
+    case ALIVE_MOTEUR:
+      if (!(check & 0x01)) {
+        lcd.DisplayStringAt(0, LINE(5 + l), (uint8_t *)"carte moteur",
+                            CENTER_MODE);
+        check = check + 0x01;
+        l += 1;
+      }
+      break;
+    case ALIVE_NUCLEO_GAUCHE:
+      if (!(check & 0x02)) {
+        lcd.DisplayStringAt(0, LINE(5 + l), (uint8_t *)"carte nucleo gauche",
+                            CENTER_MODE);
+        check = check + 0x02;
+        l += 1;
+      }
+      break;
+    case ALIVE_LIDAR:
+      if (!(check & 0x04)) {
+        lcd.DisplayStringAt(0, LINE(5 + l), (uint8_t *)"carte lidar",
+                            CENTER_MODE);
+        check = check + 0x04;
+        l += 1;
+      }
+      break;
+    case ALIVE_ASCENSEUR:
+      if (!(check & 0x08)) {
+        lcd.DisplayStringAt(0, LINE(5 + l), (uint8_t *)"carte anti-collision",
+                            CENTER_MODE);
+        check = check + 0x08;
+        l += 1;
+      }
+      break;
+    case ALIVE_HERKULEX_1:
+      if (!(check & 0x10)) {
+        lcd.DisplayStringAt(0, LINE(5 + l), (uint8_t *)"herkulex 1",
+                            CENTER_MODE);
+        check = check + 0x10;
+        l += 1;
+      }
+      break;
+    case ALIVE_HERKULEX_2:
+      if (!(check & 0x20)) {
+        lcd.DisplayStringAt(0, LINE(5 + l), (uint8_t *)"herkulex 2",
+                            CENTER_MODE);
+        check = check + 0x20;
+        l += 1;
+      }
+      break;
     }
     ThisThread::sleep_for(10ms);
-    // id_card = check_id(CHECK_NUCLEO_GAUCHE);
-    if ((id_card == ALIVE_NUCLEO_GAUCHE) & !(check & 0x02)) {
-      lcd.DisplayStringAt(0, LINE(5 + l), (uint8_t *)"carte nucleo gauche",
-                          CENTER_MODE);
-      check = check + 0x02;
-      l += 1;
-    }
-    ThisThread::sleep_for(10ms);
-    // id_card = check_id(CHECK_NUCLEO_DROIT);
 
-    if ((id_card == ALIVE_NUCLEO_DROIT) & !(check & 0x04)) {
-      lcd.DisplayStringAt(0, LINE(5 + l), (uint8_t *)"carte nucleo droite",
-                          CENTER_MODE);
-      check = check + 0x04;
-
-      l += 1;
-    }
-    ThisThread::sleep_for(10ms);
-
-    // id_card = check_id(CHECK_ASCENSEUR);
-
-    if ((id_card == ALIVE_ASCENSEUR) & !(check & 0x08)) {
-      lcd.DisplayStringAt(0, LINE(5 + l), (uint8_t *)"carte anti-collision",
-                          CENTER_MODE);
-      check = check + 0x08;
-
-      l += 1;
-    }
-    ThisThread::sleep_for(10ms);
-
-    // id_card = check_id(CHECK_HERKULEX_1);
-
-    if ((id_card == ALIVE_HERKULEX_1) & !(check & 0x10)) {
-      lcd.DisplayStringAt(0, LINE(5 + l), (uint8_t *)"herkulex 1", CENTER_MODE);
-      check = check + 0x10;
-
-      l += 1;
-    }
-    // id_card = check_id(CHECK_HERKULEX_2);
-
-    if ((id_card == ALIVE_HERKULEX_2) & !(check & 0x20)) {
-      lcd.DisplayStringAt(0, LINE(5 + l), (uint8_t *)"herkulex 2", CENTER_MODE);
-      check = check + 0x20;
-      l += 1;
-    }
     if (check == 0x3F) {
       break;
     }
     printf("Check: %X", check);
   }
 
-  // aucune intrémentation de i --> aucune carte détexté
   if (l == 0) {
     lcd.DisplayStringAt(0, LINE(8), (uint8_t *)"aucune carte connectee",
                         CENTER_MODE);
@@ -492,6 +524,43 @@ void affichage_sd(bool sd_here) {
   continuer(1);
 }
 
+void listage(FATFileSystem fs) {
+  // Listage des dossiers et des fichiers dans la racine
+  Dir dir;
+  char buf[50];
+  int error;
+  int l = 0;
+  error = dir.open(&fs, "/");
+
+  if (!error) {
+
+    lcd.Clear(BC_COLOR);
+    aff_entete();
+
+    lcd.DisplayStringAt(0, LINE(1), (uint8_t *)"LISTE DES CARTES", CENTER_MODE);
+    lcd.DisplayStringAt(0, LINE(2), (uint8_t *)"PRESENTES", CENTER_MODE);
+
+    lcd_bouton(100, 100, 600, 350, 0xff575757, LCD_COLOR_WHITE,
+               LCD_COLOR_WHITE);
+
+    struct dirent de;
+    while (dir.read(&de) > 0) {
+      if (de.d_type == DT_DIR) {
+        printf("Dir : %s\n", de.d_name);
+        sprintf(buf,"Dossier: %s",de.d_name);
+        lcd.DisplayStringAt(
+            0, LINE(5 + l), (uint8_t *)buf, CENTER_MODE);
+      } else {
+        printf("Fic : %s\n", de.d_name);
+         sprintf(buf,"-%s",de.d_name);
+        lcd.DisplayStringAt(
+        0, LINE(5 + l), (uint8_t *)buf, CENTER_MODE);
+      }
+    }
+    //        dir.close();
+  }
+}
+
 /*====================================================================|
                                 DECO
 |====================================================================*/
@@ -500,29 +569,18 @@ void affichage_sd(bool sd_here) {
 void decoration() {
   unsigned int test;
   bool deco = false;
-<<<<<<< HEAD
   if (!deco) {
     amogus();
     //  deco = true;
   }
   if (TS_State.touchDetected) {
-      deco = !deco;
-    }
-  
-=======
-  while (1) {
-    if (!deco) {
-      amogus();
-      //  deco = true;
-      ThisThread::sleep_for(33ms);
-    }
+    deco = !deco;
   }
->>>>>>> fdbb2650820535e5bd97fc366462ee5c51e373cd
 }
 
 void amogus() {
   static int i;
-<<<<<<< HEAD
+
   lcd.SetTextColor(BC_COLOR);
 
   lcd.FillRect((525 + i) % 800, 125, 50, 50);
@@ -536,14 +594,7 @@ void amogus() {
   lcd.FillRect((275 + i) % 800, 300, 250, 75);
   lcd.FillRect((275 + i) % 800, 375, 100, 50);
   lcd.FillRect((425 + i) % 800, 375, 100, 50);
-=======
-  lcd.Clear(BC_COLOR);
 
-  lcd.SetTextColor(0xFFFF0000);
-  lcd.FillRect((275 + i) % 800, 125, 250, 250);
-  lcd.FillRect((275 + i) % 800, 275, 100, 150);
-  lcd.FillRect((425 + i) % 800, 275, 100, 150);
->>>>>>> fdbb2650820535e5bd97fc366462ee5c51e373cd
   lcd.FillRect((475 + i) % 800, 175, 100, 175);
 
   lcd.SetTextColor(LCD_COLOR_DARKRED);
@@ -565,8 +616,5 @@ void amogus() {
   if (i == 800) {
     i = 0;
   }
-<<<<<<< HEAD
   ThisThread::sleep_for(33ms);
-=======
->>>>>>> fdbb2650820535e5bd97fc366462ee5c51e373cd
 }

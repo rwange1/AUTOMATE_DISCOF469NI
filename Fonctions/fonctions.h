@@ -3,8 +3,15 @@ Rémi WAN */
 #ifndef FONCTIONS_H
 #define FONCTIONS_H
 
-void lcd_init();
+#include <mbed.h>
+#include <FATFileSystem.h>
 
+
+bool mount_sd();
+void listage(FATFileSystem fs);
+void lcd_init();
+int timer_read_ms(Timer timer);
+int timer_read_s(Timer timer);
 /*====================================================================|
                                 CAN
 |====================================================================*/

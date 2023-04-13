@@ -14,6 +14,10 @@
 #include "automate_visu.h"
 #include "auto_match.h"
 #include "fonctions.h"
+#include "instruction.h"
+#include <FATFileSystem.h>
+#include <SDIOBlockDevice.h>
+#include "lecture_repertoire.h"
 #include <cstring>
 #include "bouton.h"
 

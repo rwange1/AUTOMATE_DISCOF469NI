@@ -11,7 +11,6 @@ LECT_SD,   //Affiche le contenu de la carte SD avant le match
 PROG_TEST,      
 CHOIX_COULEUR,  //Choix du coté du terrain / Couleur de l'équipe
 CHOIX_STRAT,    
-ATTENTE_JACK,  //Attebte d
 LECTURE_FICHIER,
 PROBLEM_FICHIER
 } Auto_visuel_etat;

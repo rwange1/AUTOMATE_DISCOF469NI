@@ -38,7 +38,7 @@ void automate_visuel() {
 
   // VERIFICATION DE LA PRESENCE DE LA CARTE SD
   case CHECK_SD:
-    // Besoin du file système
+    sd = mount_sd();
     if (sd == 1) {
       sd_here = 1;
 
@@ -47,13 +47,13 @@ void automate_visuel() {
       sd_here = 0;
     }
     automate_etat = LECT_SD;
+    affichage_sd(sd_here);
 
     break;
 
   // AFFICHAGE DE SI LA CARTE SD EST PRESENTE + DES FICHIERS EN INTERNES
   case LECT_SD:
 
-    affichage_sd(sd_here);
 
     // CAS programme test sélectionné
     if (test) {
@@ -106,17 +106,6 @@ void automate_visuel() {
     lcd_confirmation_menu(buf);
     check_num = ts_confirmation_menu();
     if (check_num) {
-      automate_etat = ATTENTE_JACK;
-    }
-    break;
-
-  case ATTENTE_JACK:   //CETTE FONCTION EST A INTEGRER DANS AUTO_MATCH
-    jack = true; // a commenter
-    aff_entete();
-    lcd.DisplayStringAt(0, LINE(1), (uint8_t *)"PRET AU", CENTER_MODE);
-    lcd.DisplayStringAt(0, LINE(2), (uint8_t *)"DEMARAGE", CENTER_MODE);
-
-    if (jack) {
       automate_etat = LECTURE_FICHIER;
     }
     break;
