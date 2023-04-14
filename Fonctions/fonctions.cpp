@@ -77,6 +77,11 @@ int check_id(int id) {
   return CAN_id;
 }
 
+void send_id(int id)
+{
+    busCAN.write(id);
+}
+
 void SendAck(unsigned short id, unsigned short from) {
   CANMessage msgTx = CANMessage();
   msgTx.id = id;
@@ -88,31 +93,6 @@ void SendAck(unsigned short id, unsigned short from) {
   msgTx.data[1] = (unsigned char)(from >> 8);
 
   busCAN.write(msgTx);
-}
-
-// A expliquer
-void canProcessRx() {
-  // Taille du Fifo en fonction du temps
-  static signed char FIFO_occupation = 0, FIFO_max_occupation = 0;
-
-  //(Je comprend pas pk)
-  FIFO_occupation = FIFO_ecriture - FIFO_lecture;
-
-  if (FIFO_occupation < 0)
-    FIFO_occupation = FIFO_occupation + SIZE_FIFO;
-
-  // Si la taille max ayant été occupé est dépassé cette valeur change (A quoi
-  // ça sert???)
-  if (FIFO_max_occupation < FIFO_occupation) {
-    FIFO_max_occupation = FIFO_occupation;
-    // SendRawId(
-  }
-
-  // si la taille du message n'est pas nulle
-  if (FIFO_occupation != 0) {
-    // CAN_id = Rx_Msg[SIZE_FIFO].id;
-    FIFO_lecture = (FIFO_lecture + 1) % SIZE_FIFO;
-  }
 }
 
 /*
@@ -598,9 +578,72 @@ void decoration() {
   }
 }
 
+///////
+//---CHATGPT
+#include <cmath>
+
+const int kNumColorSections = 6;
+const int kMaxColorValue = 255;
+const double kRedFactor = 0.299;
+const double kGreenFactor = 0.587;
+const double kBlueFactor = 0.114;
+
+int colorCycle(int brightness_threshold) {
+  static double angle = 0.0;
+
+  int section_index = (int)floor(angle / (360.0 / kNumColorSections)) % kNumColorSections;
+
+  int red = 0;
+  int green = 0;
+  int blue = 0;
+
+  switch (section_index) {
+    case 0:
+      red = kMaxColorValue;
+      green = (int)(angle / (360.0 / kNumColorSections) * kMaxColorValue);
+      break;
+    case 1:
+      red = (int)((kNumColorSections / 2.0 - angle / (360.0 / kNumColorSections)) * 2 * kMaxColorValue);
+      green = kMaxColorValue;
+      break;
+    case 2:
+      green = kMaxColorValue;
+      blue = (int)((angle / (360.0 / kNumColorSections) - kNumColorSections / 3.0) * kMaxColorValue);
+      break;
+    case 3:
+      green = (int)((kNumColorSections - angle / (360.0 / kNumColorSections)) * 2 * kMaxColorValue);
+      blue = kMaxColorValue;
+      break;
+    case 4:
+      red = (int)((angle / (360.0 / kNumColorSections) - kNumColorSections * 2 / 3.0) * kMaxColorValue);
+      blue = kMaxColorValue;
+      break;
+    case 5:
+      red = kMaxColorValue;
+      blue = (int)((kNumColorSections - angle / (360.0 / kNumColorSections)) * kMaxColorValue);
+      break;
+  }
+
+  double brightness = red * kRedFactor + green * kGreenFactor + blue * kBlueFactor;
+
+  if (brightness < brightness_threshold) {
+    angle += 360.0 / kNumColorSections;
+    return colorCycle(brightness_threshold);
+  }
+
+  angle += 1.0;
+
+  int color = (red << 16) | (green << 8) | blue;
+
+  return color;
+}
+//-----
+///////
+
 void amogus() {
   static int i;
-
+  int color;
+  color = colorCycle(120);
   lcd.SetTextColor(BC_COLOR);
 
   lcd.FillRect((525 + i) % 800, 125, 50, 50);
@@ -609,7 +652,7 @@ void amogus() {
   lcd.FillRect((525 + i) % 800, 375, 50, 50);
   lcd.FillRect((575 + i) % 800, 175, 50, 175);
 
-  lcd.SetTextColor(0xFFFF0000);
+  lcd.SetTextColor(0xFF000000>>color);
   lcd.FillRect((275 + i) % 800, 125, 250, 75);
   lcd.FillRect((275 + i) % 800, 300, 250, 75);
   lcd.FillRect((275 + i) % 800, 375, 100, 50);
@@ -617,7 +660,7 @@ void amogus() {
 
   lcd.FillRect((475 + i) % 800, 175, 100, 175);
 
-  lcd.SetTextColor(LCD_COLOR_DARKRED);
+  lcd.SetTextColor(0x77000000>>color);
   lcd.FillRect((325 + i) % 800, 400, 50, 25);
   lcd.FillRect((375 + i) % 800, 275, 100, 25);
   lcd.FillRect((400 + i) % 800, 225, 75, 25);

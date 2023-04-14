@@ -41,12 +41,12 @@ void automate_visuel() {
     sd = mount_sd();
     if (sd == 1) {
       sd_here = 1;
+        automate_etat = LECT_SD;
 
     } else {
 
       sd_here = 0;
     }
-    automate_etat = LECT_SD;
     affichage_sd(sd_here);
 
     break;
@@ -87,7 +87,6 @@ void automate_visuel() {
     }
 
     // Vérication
-
     lcd_confirmation_menu(equipe);
     check_equipe = ts_confirmation_menu();
 

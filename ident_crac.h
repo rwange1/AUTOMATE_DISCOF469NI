@@ -13,7 +13,7 @@
 
 #define GLOBAL_END 0x002
 #define GLOBAL_START 0x003
-#define GLOBAL STOP 0x004
+#define GLOBAL_STOP 0x004
 
 #define GLOBAL_END_INIT_POSITION 0x005 // Position du robot avant le départ
 #define GLOBAL_JACK 0x006
@@ -25,6 +25,12 @@
 //---------------------------------//
 /*         ASSERVISSEMENT          */
 //---------------------------------//
+
+#define SCAN_REQUEST 0x020
+#define POSITION_ROBOT 0x026
+#define POSITION_ROBOT_ALLIE 0x027
+#define POSITION_ENNEMIE 0x028
+
 
 //---------------------------------//
 /*              RESET              */
@@ -45,7 +51,7 @@
 //---------------------------------//
 /*              CHECKS             */
 //---------------------------------//
-
+#define CHECK_LIDAR 0x060
 #define CHECK_MOTEUR 0x061
 // #define CHECK_IHM 0x062
 #define CHECK_ASCENSEUR 0x63
@@ -94,13 +100,13 @@
 
 #define ASCENCEUR_ETAGE 0x200 // DATA --> Etage 2: 0x02, Etage 4: 0x04
 #define ASCENCEUR_PINCE 0x201 // DATA --> Attraper : 0x01, Lacher : 0x00
+#define INSTRUCTION_END_ASCENSEUR 00x20F
 
 /* --- FIN D'INSTRUCTIONS --- */
 
 #define INSTRUCTION_END_LIDAR 0x110
 #define INSTRUCTION_END_MOTEUR 0x111
 // #define INSTRUCTION_END_IHM 0x112
-#define INSTRUCTION_END_ASCENSEUR 0x113
 #define INSTRUCTION_END_HERKULEX_1 0x114
 #define INSTRUCTION_HERKULEX_2 0x115
 

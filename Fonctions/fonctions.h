@@ -17,9 +17,8 @@ int timer_read_s(Timer timer);
 |====================================================================*/
 
 int fifo_pos(int mode);
-void canProcessRx();
 int check_id(int CARD);
-
+void send_id(int id);
 void CAN_ISR();
 
 /*====================================================================|
