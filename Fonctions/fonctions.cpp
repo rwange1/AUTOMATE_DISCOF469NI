@@ -4,19 +4,14 @@
   0xff151515 // correspond a une nuance de gris assez foncé qui va nous servir
              // d'arrièreplan
 
-
-// Lis / incrémente la position du FIFO en fonction de l'index
-int fifo_pos(int mode) {
-  static int fifo_pos = 1;
-  if (mode == 1) {
-    return fifo_pos;
-  } else {
-    fifo_pos++;
-  }
-  return 0;
+// Converti les short en char
+void short_to_char(unsigned short input, unsigned char output[]) {
+  output[0] = input & 0xFF;        // masque les 8 bits de poids faible
+  output[1] = (input >> 8) & 0xFF; // décale de 8 bits à droite pour récupérer
+                                   // les 8 bits de poids fort et masque
 }
 
-//Monte le FileSystem
+// Monte le FileSystem
 bool mount_sd() {
   printf("Start\n");
   SDIOBlockDevice *bd = nullptr;
@@ -43,13 +38,14 @@ bool mount_sd() {
 
 /*
 |===============================================================================================|
-| | |                                    INITIALISATION | | |
+| | |                                       TEMPS | | |
 |===============================================================================================|
 */
 
 // Y'en a pas lol
 int timer_read_ms(Timer timer) {
-  return chrono::duration_cast<chrono::milliseconds>(timer.elapsed_time()).count();
+  return chrono::duration_cast<chrono::milliseconds>(timer.elapsed_time())
+      .count();
 }
 
 int timer_read_s(Timer timer) {
@@ -62,25 +58,31 @@ int timer_read_s(Timer timer) {
 |===============================================================================================|
 */
 
-int check_id(int id) {
-  int CAN_id;
+bool waiting_ack(int ack_wanted, bool chain = false) {
+  int fifo_read = 0, ack;
 
-  CANMessage msgTx = CANMessage();
-  msgTx.id = id;
-  msgTx.len = 0;
-  busCAN.write(msgTx);
-  wait_us(100);
-  // canProcessRx();
-  CAN_id = Rx_Msg.id;
-  printf("ID: %04x\n", CAN_id);
-
-  return CAN_id;
+  fifo_read = fifo_pos(1);
+  ack = can_msg_array[fifo_read].id;
+  if (!chain) {
+    while (!(ack_wanted == ack)) {
+    }
+  }
+  return (ack_wanted == ack);
 }
 
-void send_id(int id)
-{
-    busCAN.write(id);
+// Lis / incrémente la position du FIFO(messag can) en fonction de l'index :
+// mode 1 = lecture mode, 0 = incrément
+int fifo_pos(int mode) {
+  static int fifo_pos = 1;
+  if (mode == 1) {
+    return fifo_pos;
+  } else {
+    fifo_pos++;
+  }
+  return 0;
 }
+
+void send_id(int id) { busCAN.write(id); }
 
 void SendAck(unsigned short id, unsigned short from) {
   CANMessage msgTx = CANMessage();
@@ -275,71 +277,85 @@ bool choix_equipe() {
                       Menu du choix de stratégie
 |====================================================================*/
 
-char *choix_strategie() {
+char *choix_strategie(FATFileSystem *fs) {
   Dir dir;
-  char buf[30];
+  char buf[50];
   char numero = 0;
   char *file_name[4];
   char *strategie = "none";
   bool attente_choix = true;
 
-  lcd.Clear(BC_COLOR);
+  int error;
+  error = dir.open(fs, "/");
 
-  aff_entete();
-  lcd.DisplayStringAt(0, LINE(1), (uint8_t *)"Selectionnez une ", CENTER_MODE);
-  lcd.DisplayStringAt(0, LINE(2), (uint8_t *)"strategie", CENTER_MODE);
+  if (!error) {
 
-  int i = 1, j = 1;
-  struct dirent de;
+    lcd.Clear(BC_COLOR);
 
-  //Créations des boutons
-  while (dir.read(&de) > 0) {
-    // Si le fichier présent est un fichier
-    if (!(de.d_type == DT_DIR)) {
-      printf("Fic : %s\n", de.d_name);
-      sprintf(buf, "-%s", de.d_name);
-      file_name[numero] = de.d_name;
+    aff_entete();
+    lcd.DisplayStringAt(0, LINE(1), (uint8_t *)"Selectionnez une ",
+                        CENTER_MODE);
+    lcd.DisplayStringAt(0, LINE(2), (uint8_t *)"strategie", CENTER_MODE);
 
-      lcd_bouton(25 + 380 * j, 130 + 140 * i /*marge qui s'ajuste*/, 300, 100,
-                 0xff00688C, LCD_COLOR_WHITE, LCD_COLOR_WHITE);
-      lcd.DisplayStringAt(
-          50 + 380 * j, LINE(7 + 6 * i), (uint8_t *)buf,
-          LEFT_MODE); // surement les noms de programme plus tard (quand le
-                      // file système fonctionnera)
-      numero++;
+    int i = 0, j = 0;
+    struct dirent de;
 
-      // Gestion emplacement de bouton
-      i++;
-      if ((j != 3) & (i == 3)) {
-        i = 1;
-        j++;
-      }
-      if (j == 3) {
-        break;
+
+    // Créations des boutons
+    while (dir.read(&de) > 0) {
+      // Si le fichier présent est un fichier
+      if (!(de.d_type == DT_DIR)) {
+        printf("Fic : %s\n", de.d_name);
+        sprintf(buf, "-%s", de.d_name);
+        file_name[numero] = de.d_name;
+
+        lcd_bouton(25 + 380 * j, 130 + 140 * i /*marge qui s'ajuste*/, 300, 100,
+                   0xff00688C, LCD_COLOR_WHITE, LCD_COLOR_WHITE);
+        lcd.DisplayStringAt(
+            50 + 380 * j, LINE(7 + 6 * i), (uint8_t *)buf,
+            LEFT_MODE); // surement les noms de programme plus tard (quand le
+                        // file système fonctionnera)
+        numero++;
+
+        // Gestion emplacement de bouton
+        i++;
+        if ((j != 2) & (i == 2)) {
+          i = 1;
+          j++;
+        }
+        if (j == 2) {
+          break;
+        }
       }
     }
-  }
-  numero = 0;
-  //Récupération des info de sélections des boutons 
-  while (attente_choix) {
-    ts.GetState(&TS_State);
-    for (int l = 1; l < j; l++) {
-      for (int k = 1; k < i; k++) {
-        numero++;
-        if (TS_State.touchDetected) {
-          // Création des zones tactiles de choix
-          if (bouton_hitbox(25 + 380 * j, 130 + 140 * i, 300, 100)) {
-            strategie = file_name[numero];
-            ThisThread::sleep_for(200ms);
-            attente_choix = false;
-            return strategie;
+    // Récupération des info de sélections des boutons
+    while (attente_choix) {
+      ts.GetState(&TS_State);
+      numero = 0;
+      for (int l = 0; l < j+1 /*obligatoire*/; l++) {
+        for (int k = 0; k < i; k++) {
+          if (TS_State.touchDetected) {
+            // Création des zones tactiles de choix
+            if (bouton_hitbox(25 + 380 * k, 130 + 140 * l, 300, 100)) {
+                printf("Numero du fichier: %d\n",numero);
+              strategie = file_name[numero];
+              ThisThread::sleep_for(200ms);
+                                  printf("debug quatro\n");
+
+              attente_choix = false;
+              printf("Choix: %s \n", strategie);
+              return strategie;
+            }
           }
+        numero++;
+
         }
       }
     }
   }
   return strategie;
 }
+
 /*
 |===============================================================================================|
 |                                           AFFICHAGE
@@ -510,7 +526,13 @@ bool affichage_cartes() {
 |====================================================================*/
 
 void affichage_sd(bool sd_here) {
+
   lcd.Clear(BC_COLOR);
+  aff_entete();
+
+  lcd.DisplayStringAt(0, LINE(1), (uint8_t *)"TOUCHEZ POUR", CENTER_MODE);
+  lcd.DisplayStringAt(0, LINE(2), (uint8_t *)"ACTUALISER", CENTER_MODE);
+
   if (sd_here) {
     lcd_bouton(100, 190, 600, 110, 0xff575757, LCD_COLOR_WHITE,
                LCD_COLOR_WHITE);
@@ -526,7 +548,7 @@ void affichage_sd(bool sd_here) {
   continuer(1);
 }
 
-void listage(FATFileSystem *fs){
+void listage(FATFileSystem *fs) {
   // Listage des dossiers et des fichiers dans la racine
   Dir dir;
   char buf[50];
@@ -591,40 +613,50 @@ const double kBlueFactor = 0.114;
 int colorCycle(int brightness_threshold) {
   static double angle = 0.0;
 
-  int section_index = (int)floor(angle / (360.0 / kNumColorSections)) % kNumColorSections;
+  int section_index =
+      (int)floor(angle / (360.0 / kNumColorSections)) % kNumColorSections;
 
   int red = 0;
   int green = 0;
   int blue = 0;
 
   switch (section_index) {
-    case 0:
-      red = kMaxColorValue;
-      green = (int)(angle / (360.0 / kNumColorSections) * kMaxColorValue);
-      break;
-    case 1:
-      red = (int)((kNumColorSections / 2.0 - angle / (360.0 / kNumColorSections)) * 2 * kMaxColorValue);
-      green = kMaxColorValue;
-      break;
-    case 2:
-      green = kMaxColorValue;
-      blue = (int)((angle / (360.0 / kNumColorSections) - kNumColorSections / 3.0) * kMaxColorValue);
-      break;
-    case 3:
-      green = (int)((kNumColorSections - angle / (360.0 / kNumColorSections)) * 2 * kMaxColorValue);
-      blue = kMaxColorValue;
-      break;
-    case 4:
-      red = (int)((angle / (360.0 / kNumColorSections) - kNumColorSections * 2 / 3.0) * kMaxColorValue);
-      blue = kMaxColorValue;
-      break;
-    case 5:
-      red = kMaxColorValue;
-      blue = (int)((kNumColorSections - angle / (360.0 / kNumColorSections)) * kMaxColorValue);
-      break;
+  case 0:
+    red = kMaxColorValue;
+    green = (int)(angle / (360.0 / kNumColorSections) * kMaxColorValue);
+    break;
+  case 1:
+    red =
+        (int)((kNumColorSections / 2.0 - angle / (360.0 / kNumColorSections)) *
+              2 * kMaxColorValue);
+    green = kMaxColorValue;
+    break;
+  case 2:
+    green = kMaxColorValue;
+    blue =
+        (int)((angle / (360.0 / kNumColorSections) - kNumColorSections / 3.0) *
+              kMaxColorValue);
+    break;
+  case 3:
+    green = (int)((kNumColorSections - angle / (360.0 / kNumColorSections)) *
+                  2 * kMaxColorValue);
+    blue = kMaxColorValue;
+    break;
+  case 4:
+    red = (int)((angle / (360.0 / kNumColorSections) -
+                 kNumColorSections * 2 / 3.0) *
+                kMaxColorValue);
+    blue = kMaxColorValue;
+    break;
+  case 5:
+    red = kMaxColorValue;
+    blue = (int)((kNumColorSections - angle / (360.0 / kNumColorSections)) *
+                 kMaxColorValue);
+    break;
   }
 
-  double brightness = red * kRedFactor + green * kGreenFactor + blue * kBlueFactor;
+  double brightness =
+      red * kRedFactor + green * kGreenFactor + blue * kBlueFactor;
 
   if (brightness < brightness_threshold) {
     angle += 360.0 / kNumColorSections;
@@ -652,7 +684,7 @@ void amogus() {
   lcd.FillRect((525 + i) % 800, 375, 50, 50);
   lcd.FillRect((575 + i) % 800, 175, 50, 175);
 
-  lcd.SetTextColor(0xFF000000>>color);
+  lcd.SetTextColor(0xFF000000 >> color);
   lcd.FillRect((275 + i) % 800, 125, 250, 75);
   lcd.FillRect((275 + i) % 800, 300, 250, 75);
   lcd.FillRect((275 + i) % 800, 375, 100, 50);
@@ -660,7 +692,7 @@ void amogus() {
 
   lcd.FillRect((475 + i) % 800, 175, 100, 175);
 
-  lcd.SetTextColor(0x77000000>>color);
+  lcd.SetTextColor(0x77000000 >> color);
   lcd.FillRect((325 + i) % 800, 400, 50, 25);
   lcd.FillRect((375 + i) % 800, 275, 100, 25);
   lcd.FillRect((400 + i) % 800, 225, 75, 25);

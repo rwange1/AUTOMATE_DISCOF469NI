@@ -1,11 +1,11 @@
 #include "all_includes.h"
 
 
-
 // Si l'état initiale est différent de LAUNCH c'est qu'il a été forcé pour debug
 Auto_visuel_etat automate_etat = LAUNCH;
 
 void automate_visuel() {
+CANMessage msg;
 
   /* Initialisations de différents flag
   (voir la listes des ID pour plus d'info) */
@@ -62,9 +62,7 @@ void automate_visuel() {
     // CAS carte SD présente
     if (sd_here) {
       // CAS programme Match sélectionné
-      if (match) {
         automate_etat = CHOIX_COULEUR;
-      }
     }
     break;
 
@@ -75,14 +73,19 @@ void automate_visuel() {
     // CHOIX CAMPS DU TERRAIN
   case CHOIX_COULEUR:
     /* Création d'une variable couleur tel que :
-        "vert" == 0 "bleu" == 1*/
+        "vert" == 0, "bleu" == 1*/
     bool couleur;
+        msg.id =0x609;
+        msg.len = 0x01;
+
     couleur = choix_equipe();
 
     // Gestion de l'affichage
     if (couleur == 0) {
+        msg.data[0] = 0x00;
       equipe = "Equipe verte";
     } else {
+        msg.data[0] = 0x01;
       equipe = "Equipe bleu";
     }
 
@@ -98,7 +101,7 @@ void automate_visuel() {
   // CHOIX SRATEGIE A APPLIQUER
   case CHOIX_STRAT:
     //Récupere le nom du fichier stratégie utilisé
-    strat = choix_strategie();
+    strat = choix_strategie(&m_fs);
     sprintf(buf, "-%s", strat);
     lcd_confirmation_menu(buf);
     check_num = ts_confirmation_menu();
@@ -117,7 +120,7 @@ void automate_visuel() {
     //FAIS UN AMONGUS EN DESSIN
     decoration();
   
-    //auto_match(); //automate du controle du robot durant le match
+    auto_match(); //automate du controle du robot durant le match
   }
     // if (donnee_fichier == "") {
     //  automate_etat = PROBLEM_FICHIER;

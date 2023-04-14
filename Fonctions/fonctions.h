@@ -6,9 +6,11 @@ Rémi WAN */
 #include <mbed.h>
 #include <FATFileSystem.h>
 
+void short_to_char(unsigned short input, unsigned char output[]);
 
 bool mount_sd();
 void listage(FATFileSystem *fs);
+
 void lcd_init();
 int timer_read_ms(Timer timer);
 int timer_read_s(Timer timer);
@@ -17,6 +19,12 @@ int timer_read_s(Timer timer);
 |====================================================================*/
 
 int fifo_pos(int mode);
+/**
+* @param mode : 1 = lecture, 0 =  incrément
+**/
+
+bool waiting_ack(int ack_wanted);
+
 int check_id(int CARD);
 void send_id(int id);
 void CAN_ISR();
@@ -44,7 +52,7 @@ bool choix_equipe();
 Menu à 2 boutons du cas CHOIX_COULEUR
 
 **/
-char * choix_strategie();
+char * choix_strategie(FATFileSystem *fs);
 /**
 
 Menu du choix de la stratégie
