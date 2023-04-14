@@ -673,8 +673,8 @@ void amogus() {
   static int i;
   int color;
   color = colorCycle(120);
+  
   lcd.SetTextColor(BC_COLOR);
-
   lcd.FillRect((525 + i) % 800, 125, 50, 50);
   lcd.FillRect((525 + i) % 800, 350, 50, 25);
   lcd.FillRect((375 + i) % 800, 375, 50, 50);
@@ -689,7 +689,7 @@ void amogus() {
 
   lcd.FillRect((475 + i) % 800, 175, 100, 175);
 
-  lcd.SetTextColor(0x77000000 | color);
+  lcd.SetTextColor(0xAA000000 | color);
   lcd.FillRect((325 + i) % 800, 400, 50, 25);
   lcd.FillRect((375 + i) % 800, 275, 100, 25);
   lcd.FillRect((400 + i) % 800, 225, 75, 25);

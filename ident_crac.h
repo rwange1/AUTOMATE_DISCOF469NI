@@ -81,6 +81,7 @@
 /*           INSTRUCTIONS          */
 //---------------------------------//
 
+
 /* --- ACKNOWLEDGE --- */
 
 #define ACKNOWLEDGE_LIDAR 0x100
@@ -95,12 +96,26 @@
 
 #define ACKNOWLEDGE_STRAT 0x10A
 
+/*************** 2023 ****************/
 
 /* --- ASCENCEUR --- */
 
 #define ASCENCEUR_ETAGE 0x200 // DATA --> Etage 2: 0x02, Etage 4: 0x04
 #define ASCENCEUR_PINCE 0x201 // DATA --> Attraper : 0x01, Lacher : 0x00
 #define INSTRUCTION_END_ASCENSEUR 00x20F
+
+/* --- CERISES --- */
+
+#define POSE_CERISE 0x220
+#define ATTRAPE_CERISE 0x221
+#define TIRE_CERISE 0x222
+
+/* --- DEGUISEMENT --*/
+
+#define DEGUISE 0x555
+
+/*************************************/
+
 
 /* --- FIN D'INSTRUCTIONS --- */
 

@@ -9,7 +9,6 @@ struct S_Instruction instruction;
 unsigned char actual_instruction;
 struct S_Instruction strat_instructions[100];
 
-
 void auto_match(char *prog) {
 
   /* Initialisations de différents flag
@@ -55,7 +54,7 @@ void auto_match(char *prog) {
     break;
 
   case INSTRUCTION_LOADING:
-  printf("INSTRUCTION LOADING\n");
+    printf("INSTRUCTION LOADING\n");
     switch (instruction.order) {
     case MV_BEZIER:
       break;
@@ -67,9 +66,8 @@ void auto_match(char *prog) {
       } else {
         //?
       }
-      if(waiting_ack(0x101)){
-              automatch_etat = INSTRUCTION_RUNNING;
-
+      if (waiting_ack(0x101)) {
+        automatch_etat = INSTRUCTION_RUNNING;
       }
       break;
     case MV_LINE:
@@ -79,9 +77,9 @@ void auto_match(char *prog) {
       } else {
         sens = -1;
       }
-if(waiting_ack(0x101)){
-              automatch_etat = INSTRUCTION_RUNNING;
-}
+      if (waiting_ack(0x101)) {
+        automatch_etat = INSTRUCTION_RUNNING;
+      }
       // id pour bouger
       break;
     case MV_TURN:
@@ -93,9 +91,9 @@ if(waiting_ack(0x101)){
       if (instruction.direction == ABSOLUTE) {
         // Rotation (angle absolu) réelbusCAN.msg
       }
-if(waiting_ack(0x101)){
-              automatch_etat = INSTRUCTION_RUNNING;
-}
+      if (waiting_ack(0x101)) {
+        automatch_etat = INSTRUCTION_RUNNING;
+      }
       break;
     case MV_XYT:
       if (instruction.direction == FORWARD) {
@@ -111,9 +109,9 @@ if(waiting_ack(0x101)){
       short_to_char(instruction.arg3, &msg.data[4]); // z
       // theta
       busCAN.write(msg);
-if(waiting_ack(0x101)){
-              automatch_etat = INSTRUCTION_RUNNING;
-}
+      if (waiting_ack(0x101)) {
+        automatch_etat = INSTRUCTION_RUNNING;
+      }
       break;
 
     case MV_RECALAGE:
@@ -122,9 +120,10 @@ if(waiting_ack(0x101)){
       } else {
         sens = -1;
       }
-if(waiting_ack(0x101)){
-              automatch_etat = INSTRUCTION_RUNNING;
-}      break;
+      if (waiting_ack(0x101)) {
+        automatch_etat = INSTRUCTION_RUNNING;
+      }
+      break;
 
     case ACTION:
       // 1er paramètre numérique
@@ -132,9 +131,10 @@ if(waiting_ack(0x101)){
       case 15: // Evitement
         break;
       case 16: // Set odo
-if(waiting_ack(0x101)){
-              automatch_etat = INSTRUCTION_RUNNING;
-}        break;
+        if (waiting_ack(0x101)) {
+          automatch_etat = INSTRUCTION_RUNNING;
+        }
+        break;
       case 17: // wait
         ThisThread::sleep_for(500ms);
         break;
@@ -155,9 +155,10 @@ if(waiting_ack(0x101)){
         msg.data[0] = 0x01; // attraper
 
         busCAN.write(msg);
-if(waiting_ack(0x103)){
-              automatch_etat = INSTRUCTION_RUNNING;
-}        break;
+        if (waiting_ack(0x103)) {
+          automatch_etat = INSTRUCTION_RUNNING;
+        }
+        break;
 
       case 23:          // Relacher gateau
         msg.id = 0x201; // ASCENCEUR_PINCE
@@ -165,9 +166,9 @@ if(waiting_ack(0x103)){
         msg.data[0] = 0x00; // relacher
 
         busCAN.write(msg);
-if(waiting_ack(0x103)){
-              automatch_etat = INSTRUCTION_RUNNING;
-}
+        if (waiting_ack(0x103)) {
+          automatch_etat = INSTRUCTION_RUNNING;
+        }
         break;
 
       case 24:          // Monter gateau
@@ -189,9 +190,9 @@ if(waiting_ack(0x103)){
           break;
         }
         busCAN.write(msg);
-if(waiting_ack(0x103)){
-              automatch_etat = INSTRUCTION_RUNNING;
-}
+        if (waiting_ack(0x103)) {
+          automatch_etat = INSTRUCTION_RUNNING;
+        }
         break;
       case 25: // pose cerise gateau
         break;
@@ -232,6 +233,7 @@ if(waiting_ack(0x103)){
     break;
   case GAME_END:
     printf("END MATCH\n");
+    send_id(0x555);
 
     // Se met sur une assiette, funny action
     automatch_etat = SCORE_SHOW;
@@ -239,9 +241,8 @@ if(waiting_ack(0x103)){
   case SCORE_SHOW:
 
     break;
-
-    if (timer_read_s(timer) > 90) {
-      automatch_etat = GAME_END;
-    }
+  }
+  if (timer_read_s(timer) > 20) {
+    automatch_etat = GAME_END;
   }
 }
