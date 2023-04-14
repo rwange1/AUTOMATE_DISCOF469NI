@@ -16,7 +16,7 @@ typedef enum{
 
 } Auto_match_etat;
 
-void auto_match();
+void auto_match(char * prog);
 
 
 

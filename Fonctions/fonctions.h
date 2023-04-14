@@ -7,6 +7,7 @@ Rémi WAN */
 #include <FATFileSystem.h>
 
 void short_to_char(unsigned short input, unsigned char output[]);
+void lecture_fichier(char * strat);
 
 bool mount_sd();
 void listage(FATFileSystem *fs);
@@ -23,7 +24,7 @@ int fifo_pos(int mode);
 * @param mode : 1 = lecture, 0 =  incrément
 **/
 
-bool waiting_ack(int ack_wanted);
+bool waiting_ack(int ack_wanted, bool chain =false);
 
 int check_id(int CARD);
 void send_id(int id);
@@ -101,6 +102,10 @@ Hitbox du bouton :
 /* A éviter */
 bool bouton(short marge_X, short marge_Y, short largeur_X, short hauteur_Y,int couleur_interne, int couleur_contour, int couleur_texte);
 
+
+/**
+* @param affiche_bouton : affiche un si mis a true
+**/
 void continuer(bool affiche_bouton);
 /*
     pour que touchez l'écran fasse passer a l'étape suivante (attention tout l'écran n'est pas pris en compte)

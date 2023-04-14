@@ -6,11 +6,10 @@ char *rest;
 char sd_present=0;
 char buf[30];
 //Défini dans automate_visuel
-char * strat;
 
 //comprendra qui pourra
 
-void lecture_fichier(void){
+void lecture_fichier(char * strat){
     short i,j;
 
     struct dirent de;
@@ -20,7 +19,7 @@ void lecture_fichier(void){
     
         // strcpy(strat,"/sd");
         rep->open(&m_fs,"/sd");
-        /*     J'ai pas compris
+        /*     J'ai pas compris à quoi sert ce qu'il y a apres
         for(i=0;i<20;i++)
         {
             files_name[i]= ;  

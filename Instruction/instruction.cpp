@@ -125,17 +125,13 @@ struct S_Instruction stringToInstruction(char line[]) {
 /*  Il faut utiliser strcpy(cheminFileStart,"/local/strat.txt");                        */
 /*   pour indiquer le fichier à utiliser                                                */
 /****************************************************************************************/
-
-/*void loadAllInstruction( signed char Strategie) {
+/*
+void loadAllInstruction( signed char Strategie) {
     
     struct S_Instruction instruction;
-    char LineBuffer[SIZE];
-    printf("Reading file : ");
-    printf(strat_sd[Strategie]);
-    printf("\n");
-    strcpy(PATH[Strategie],"/sd/");
-    strcat(PATH[Strategie],strat_sd[Strategie]);
-    strcat(PATH[Strategie],".txt");
+    char LineBuffer[100];
+    printf("Reading file : %s",Strategie);
+    sprintf()
     FILE *testFile = fopen(PATH[Strategie], "rt"); //Ouverture du fichier en mode lecture seul au format string
     
     nb_instructions = 0;

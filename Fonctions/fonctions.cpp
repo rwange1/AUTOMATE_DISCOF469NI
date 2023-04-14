@@ -11,6 +11,7 @@ void short_to_char(unsigned short input, unsigned char output[]) {
                                    // les 8 bits de poids fort et masque
 }
 
+
 // Monte le FileSystem
 bool mount_sd() {
   printf("Start\n");
@@ -58,7 +59,7 @@ int timer_read_s(Timer timer) {
 |===============================================================================================|
 */
 
-bool waiting_ack(int ack_wanted, bool chain = false) {
+bool waiting_ack(int ack_wanted, bool chain) {
   int fifo_read = 0, ack;
 
   fifo_read = fifo_pos(1);
@@ -177,7 +178,7 @@ void continuer(bool affiche_bouton) {
   // d'estétisme)
 
   while (!end) {
-    // SI mis dans un thread a par, toute les fonctions bloquantes ne le serons
+    // Si mis dans un thread a par, toute les fonctions bloquantes ne le serons
     // plus
     ts.GetState(&TS_State);
 
@@ -281,7 +282,7 @@ char *choix_strategie(FATFileSystem *fs) {
   Dir dir;
   char buf[50];
   char numero = 0;
-  char *file_name[4];
+  char *file_name[4]{"none", "none", "none", "none"};
   char *strategie = "none";
   bool attente_choix = true;
 
@@ -293,13 +294,11 @@ char *choix_strategie(FATFileSystem *fs) {
     lcd.Clear(BC_COLOR);
 
     aff_entete();
-    lcd.DisplayStringAt(0, LINE(1), (uint8_t *)"Selectionnez une ",
-                        CENTER_MODE);
+    lcd.DisplayStringAt(0, LINE(1), (uint8_t *)"Selectionnez une", CENTER_MODE);
     lcd.DisplayStringAt(0, LINE(2), (uint8_t *)"strategie", CENTER_MODE);
 
     int i = 0, j = 0;
     struct dirent de;
-
 
     // Créations des boutons
     while (dir.read(&de) > 0) {
@@ -308,7 +307,8 @@ char *choix_strategie(FATFileSystem *fs) {
         printf("Fic : %s\n", de.d_name);
         sprintf(buf, "-%s", de.d_name);
         file_name[numero] = de.d_name;
-
+        printf("Noms des fichiers :\n %s, %s, %s, %s\n", file_name[0],
+               file_name[1], file_name[2], file_name[3]);
         lcd_bouton(25 + 380 * j, 130 + 140 * i /*marge qui s'ajuste*/, 300, 100,
                    0xff00688C, LCD_COLOR_WHITE, LCD_COLOR_WHITE);
         lcd.DisplayStringAt(
@@ -327,28 +327,24 @@ char *choix_strategie(FATFileSystem *fs) {
           break;
         }
       }
-    }
-    // Récupération des info de sélections des boutons
-    while (attente_choix) {
-      ts.GetState(&TS_State);
-      numero = 0;
-      for (int l = 0; l < j+1 /*obligatoire*/; l++) {
-        for (int k = 0; k < i; k++) {
-          if (TS_State.touchDetected) {
-            // Création des zones tactiles de choix
-            if (bouton_hitbox(25 + 380 * k, 130 + 140 * l, 300, 100)) {
-                printf("Numero du fichier: %d\n",numero);
-              strategie = file_name[numero];
-              ThisThread::sleep_for(200ms);
-                                  printf("debug quatro\n");
-
-              attente_choix = false;
-              printf("Choix: %s \n", strategie);
-              return strategie;
+      // Récupération des info de sélections des boutons
+      while (attente_choix) {
+        ts.GetState(&TS_State);
+        numero = 0;
+        for (int l = 0; l < j + 1 /*obligatoire*/; l++) {
+          for (int k = 0; k < i; k++) {
+            if (TS_State.touchDetected) {
+              // Création des zones tactiles de choix
+              if (bouton_hitbox(25 + 380 * k, 130 + 140 * l, 300, 100)) {
+                strategie = file_name[numero];
+                ThisThread::sleep_for(200ms);
+                printf("Choix: %s, %s\n", strategie, file_name[numero]);
+                attente_choix = false;
+                return strategie;
+              }
             }
+            numero++;
           }
-        numero++;
-
         }
       }
     }
@@ -572,15 +568,16 @@ void listage(FATFileSystem *fs) {
       if (de.d_type == DT_DIR) {
         printf("Dir : %s\n", de.d_name);
         sprintf(buf, "Dossier: %s", de.d_name);
-        lcd.DisplayStringAt(0, LINE(5 + l), (uint8_t *)buf, CENTER_MODE);
+        lcd.DisplayStringAt(0, LINE(5 + l++), (uint8_t *)buf, CENTER_MODE);
       } else {
         printf("Fic : %s\n", de.d_name);
         sprintf(buf, "-%s", de.d_name);
-        lcd.DisplayStringAt(0, LINE(5 + l), (uint8_t *)buf, CENTER_MODE);
+        lcd.DisplayStringAt(0, LINE(5 + l++), (uint8_t *)buf, CENTER_MODE);
       }
     }
     //        dir.close();
   }
+  continuer(0);
 }
 
 /*====================================================================|
@@ -684,7 +681,7 @@ void amogus() {
   lcd.FillRect((525 + i) % 800, 375, 50, 50);
   lcd.FillRect((575 + i) % 800, 175, 50, 175);
 
-  lcd.SetTextColor(0xFF000000 >> color);
+  lcd.SetTextColor(0xFF000000 | color);
   lcd.FillRect((275 + i) % 800, 125, 250, 75);
   lcd.FillRect((275 + i) % 800, 300, 250, 75);
   lcd.FillRect((275 + i) % 800, 375, 100, 50);
@@ -692,7 +689,7 @@ void amogus() {
 
   lcd.FillRect((475 + i) % 800, 175, 100, 175);
 
-  lcd.SetTextColor(0x77000000 >> color);
+  lcd.SetTextColor(0x77000000 | color);
   lcd.FillRect((325 + i) % 800, 400, 50, 25);
   lcd.FillRect((375 + i) % 800, 275, 100, 25);
   lcd.FillRect((400 + i) % 800, 225, 75, 25);
@@ -707,7 +704,7 @@ void amogus() {
 
   lcd.SetTextColor(LCD_COLOR_LIGHTGRAY);
   lcd.FillRect((250 + i) % 800, 225, 50, 25);
-  i = i + 770;
+  i = i + 780;
   if (i == 800) {
     i = 0;
   }

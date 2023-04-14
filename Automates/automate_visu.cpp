@@ -120,7 +120,7 @@ CANMessage msg;
     //FAIS UN AMONGUS EN DESSIN
     decoration();
   
-    auto_match(); //automate du controle du robot durant le match
+    auto_match(strat); //automate du controle du robot durant le match
   }
     // if (donnee_fichier == "") {
     //  automate_etat = PROBLEM_FICHIER;

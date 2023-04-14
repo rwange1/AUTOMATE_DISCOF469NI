@@ -1,21 +1,43 @@
 #include "all_includes.h"
 
-void auto_match() {
-  Timer timer;
-  Timer timout;
-  
-  Auto_match_etat automatch_etat = WAITING_JACK;
-  struct S_Instruction instruction;
-  unsigned char actual_instruction;
-  CANMessage msg;
+CANMessage msg;
+Timer timer;
+Timer timout;
+Auto_match_etat automatch_etat = WAITING_JACK;
+
+struct S_Instruction instruction;
+unsigned char actual_instruction;
+struct S_Instruction strat_instructions[100];
+
+
+void auto_match(char *prog) {
 
   /* Initialisations de différents flag
   (voir la listes des ID pour plus d'info) */
-  static bool jack = false;
-  int sens = 0;
-  char buf[30];
-  char num;
-  char *equipe, *donnee_fichier;
+  static bool jack = true /*mettre a false*/, first_entry = true;
+  static int sens = 0, nb_instructions = 0;
+  static char buf[30];
+  static char num;
+  static char *equipe, *donnee_fichier;
+  static char line_buffer[100];
+
+  if (first_entry) {
+    // CHARGEMENT DES INSTRUCTIONS
+    instruction = strat_instructions[actual_instruction];
+
+    // lecture_fichier(prog);
+    nb_instructions = 0;
+    FILE *testFile = fopen(prog, "rt");
+    while (fgets(line_buffer, 100, testFile) != NULL) {
+      instruction = stringToInstruction(line_buffer);
+      strat_instructions[nb_instructions] = instruction;
+      // printf(LineBuffer);
+      // debug_Instruction(instruction);
+      nb_instructions++;
+      printf("%s,", line_buffer);
+    }
+    first_entry = false;
+  }
 
   // Lancement de l'automate
   switch (automatch_etat) {
@@ -26,43 +48,54 @@ void auto_match() {
     break;
 
   case GAME_START:
+    printf("TIMER START\n");
     timer.start();
     // recalage?
     automatch_etat = INSTRUCTION_LOADING;
     break;
 
   case INSTRUCTION_LOADING:
-    automatch_etat = INSTRUCTION_RUNNING;
+  printf("INSTRUCTION LOADING\n");
     switch (instruction.order) {
     case MV_BEZIER:
       break;
     case MV_COURBURE:
+      printf("COURBE\n");
+
       if (instruction.direction == LEFT) {
         // ?
       } else {
         //?
       }
-            waiting_ack(0x101);
+      if(waiting_ack(0x101)){
+              automatch_etat = INSTRUCTION_RUNNING;
+
+      }
       break;
     case MV_LINE:
+      printf("LINE\n");
       if (instruction.direction == FORWARD) {
         sens = 1;
       } else {
         sens = -1;
       }
-            waiting_ack(0x101);
-
+if(waiting_ack(0x101)){
+              automatch_etat = INSTRUCTION_RUNNING;
+}
       // id pour bouger
       break;
     case MV_TURN:
+      printf("TURN\n");
+
       if (instruction.direction == RELATIVE) {
         // Rotation (angle relatif) busCAN.msg()
       }
       if (instruction.direction == ABSOLUTE) {
         // Rotation (angle absolu) réelbusCAN.msg
       }
-            waiting_ack(0x101);
-
+if(waiting_ack(0x101)){
+              automatch_etat = INSTRUCTION_RUNNING;
+}
       break;
     case MV_XYT:
       if (instruction.direction == FORWARD) {
@@ -78,8 +111,9 @@ void auto_match() {
       short_to_char(instruction.arg3, &msg.data[4]); // z
       // theta
       busCAN.write(msg);
-          waiting_ack(0x101);
-
+if(waiting_ack(0x101)){
+              automatch_etat = INSTRUCTION_RUNNING;
+}
       break;
 
     case MV_RECALAGE:
@@ -88,8 +122,9 @@ void auto_match() {
       } else {
         sens = -1;
       }
-            waiting_ack(0x101);
-      break;
+if(waiting_ack(0x101)){
+              automatch_etat = INSTRUCTION_RUNNING;
+}      break;
 
     case ACTION:
       // 1er paramètre numérique
@@ -97,8 +132,9 @@ void auto_match() {
       case 15: // Evitement
         break;
       case 16: // Set odo
-      waiting_ack(0x101);
-        break;
+if(waiting_ack(0x101)){
+              automatch_etat = INSTRUCTION_RUNNING;
+}        break;
       case 17: // wait
         ThisThread::sleep_for(500ms);
         break;
@@ -119,17 +155,19 @@ void auto_match() {
         msg.data[0] = 0x01; // attraper
 
         busCAN.write(msg);
-        waiting_ack(0x103);
-        break;
+if(waiting_ack(0x103)){
+              automatch_etat = INSTRUCTION_RUNNING;
+}        break;
 
       case 23:          // Relacher gateau
         msg.id = 0x201; // ASCENCEUR_PINCE
         msg.len = 0x01;
         msg.data[0] = 0x00; // relacher
-        
-        busCAN.write(msg);
-        waiting_ack(0x103);
 
+        busCAN.write(msg);
+if(waiting_ack(0x103)){
+              automatch_etat = INSTRUCTION_RUNNING;
+}
         break;
 
       case 24:          // Monter gateau
@@ -151,8 +189,9 @@ void auto_match() {
           break;
         }
         busCAN.write(msg);
-        waiting_ack(0x103);
-
+if(waiting_ack(0x103)){
+              automatch_etat = INSTRUCTION_RUNNING;
+}
         break;
       case 25: // pose cerise gateau
         break;
@@ -176,21 +215,24 @@ void auto_match() {
       break;
       //
     }
-    automatch_etat = INSTRUCTION_RUNNING;
     break;
 
   case INSTRUCTION_RUNNING:
+    printf("INSTRCUTION RUNNING\n");
 
     automatch_etat = INSTRUCTION_FREE;
     break;
 
   case INSTRUCTION_FREE:
-    automatch_etat = INSTRUCTION_LOADING;
-
+    printf("INSTRCUTION FREE\n");
     actual_instruction = instruction.nextLineOK;
+
+    automatch_etat = INSTRUCTION_LOADING;
 
     break;
   case GAME_END:
+    printf("END MATCH\n");
+
     // Se met sur une assiette, funny action
     automatch_etat = SCORE_SHOW;
 
